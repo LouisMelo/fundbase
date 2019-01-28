@@ -1,0 +1,31 @@
+{
+  "name": "fundbase",
+  "version": "1.0.0",
+  "description": "fund statistics",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "mocha --reporter spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LouisMelo/fundbase.git"
+  },
+  "author": "Louis Melo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LouisMelo/fundbase/issues"
+  },
+  "homepage": "https://github.com/LouisMelo/fundbase#readme",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "typescript": "^3.2.4"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "moment": "^2.24.0",
+    "rxjs": "^6.3.3"
+  }
+}
