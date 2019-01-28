@@ -1,0 +1,26 @@
+{
+  "name": "fundbase",
+  "version": "1.0.0",
+  "description": "fund statistics",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LouisMelo/fundbase.git"
+  },
+  "author": "Louis Melo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LouisMelo/fundbase/issues"
+  },
+  "homepage": "https://github.com/LouisMelo/fundbase#readme",
+  "devDependencies": {
+    "typescript": "^3.2.4"
+  },
+  "dependencies": {
+    "axios": "^0.18.0"
+  }
+}
