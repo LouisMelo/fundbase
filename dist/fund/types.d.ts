@@ -49,3 +49,9 @@ export declare type FundRaw = {
     fxsytz: string;
     fpyz: string;
 };
+export declare type Nav = {
+    date: string;
+    value: number;
+    total: number;
+    change?: number;
+};

@@ -38,3 +38,47 @@ function getFundInfo(code) {
     }); }));
 }
 exports.getFundInfo = getFundInfo;
+/* code, start, end,... */
+function getNavHistory(code) {
+    var start = utils_1.lastYearToday();
+    var end = utils_1.today();
+    return getFundInfo(code).pipe(operators_1.mergeMap(function (fund) {
+        var isMonetary = false;
+        if (fund.type.indexOf('债券型') > -1 || fund.type.indexOf('货币型') > -1) {
+            isMonetary = true;
+        }
+        return getNavHistoryNum(code, start, end, isMonetary).pipe(operators_1.mergeMap(function (num) { return parseNavHistoryData(code, start, end, num, isMonetary); }));
+    }));
+}
+exports.getNavHistory = getNavHistory;
+function getNavHistoryNum(code, start, end, isMonetary) {
+    if (isMonetary === void 0) { isMonetary = false; }
+    var requestUrl;
+    if (isMonetary) {
+        requestUrl = "http://stock.finance.sina.com.cn/fundInfo/api/openapi.php/CaihuiFundInfoService.getNavcur?symbol=" + code + "&datefrom=" + start + "&dateto=" + end;
+    }
+    else {
+        requestUrl = "http://stock.finance.sina.com.cn/fundInfo/api/openapi.php/CaihuiFundInfoService.getNav?symbol=" + code + "&datefrom=" + start + "&dateto=" + end;
+    }
+    return rxjs_1.from(axios_1.default.get(requestUrl))
+        .pipe(operators_1.map(function (res) { return parseInt(res.data.result.data.total_num); }));
+}
+function parseNavHistoryData(code, start, end, num, isMonetary) {
+    if (num === 0) {
+        return rxjs_1.of([]);
+    }
+    var requestUrl;
+    if (isMonetary) {
+        requestUrl = "http://stock.finance.sina.com.cn/fundInfo/api/openapi.php/CaihuiFundInfoService.getNavcur?symbol=" + code + "&datefrom=" + start + "&dateto=" + end + "&num=" + num;
+    }
+    else {
+        requestUrl = "http://stock.finance.sina.com.cn/fundInfo/api/openapi.php/CaihuiFundInfoService.getNav?symbol=" + code + "&datefrom=" + start + "&dateto=" + end + "&num=" + num;
+    }
+    return rxjs_1.from(axios_1.default.get(requestUrl))
+        .pipe(operators_1.map(function (res) { return res.data.result.data.data; }), operators_1.map(function (rows) { return rows.map(function (row) { return ({
+        date: row.fbrq.split(' ')[0],
+        value: parseFloat(row.jjjz),
+        total: parseFloat(row.ljjz)
+    }); }); }));
+}
+getNavHistory('512880').subscribe(function (res) { return console.table(res); });
