@@ -72,3 +72,14 @@ export type FundRaw = {
   fxsytz: string,
   fpyz: string
 }
+
+export type Nav = {
+  // 日期
+  date: string,
+  // 基金净值
+  value: number,
+  // 累计净值
+  total: number,
+  // 净值增长率
+  change?: number,
+}

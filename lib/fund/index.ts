@@ -1,8 +1,8 @@
 import axios from 'axios'
-import { from, Observable } from 'rxjs'
-import { map } from 'rxjs/operators'
-import { fromHtml } from '../utils'
-import { FundSchema, FundRaw } from './types';
+import { from, of, Observable } from 'rxjs'
+import { map, mergeMap } from 'rxjs/operators'
+import { fromHtml, today, lastYearToday } from '../utils'
+import { FundSchema, FundRaw, Nav } from './types';
 
 export function getFundInfo(code: string): Observable<FundSchema> {
   const url = `http://stock.finance.sina.com.cn/fundInfo/api/openapi.php/FundPageInfoService.tabjjgk?symbol=${code}&format=json`
@@ -34,4 +34,58 @@ export function getFundInfo(code: string): Observable<FundSchema> {
       feature: f.fxsytz,
       distribution_principle: f.fpyz
     })))
+}
+
+/* code, start, end,... */
+export function getNavHistory(code: string): Observable<Nav[]>{
+  const start = lastYearToday()
+  const end = today()
+
+  return getFundInfo(code).pipe(
+    mergeMap((fund) => {
+      let isMonetary = false
+
+      if (fund.type.indexOf('债券型') > -1 || fund.type.indexOf('货币型') > -1) {
+        isMonetary = true
+      }
+      return getNavHistoryNum(code, start, end, isMonetary).pipe(
+        mergeMap(num => parseNavHistoryData(code, start, end, num, isMonetary))
+      )
+    })
+  )
+}
+
+function getNavHistoryNum(code: string, start: string, end: string, isMonetary = false): Observable<number> {
+  let requestUrl: string
+  if (isMonetary) {
+    requestUrl = `http://stock.finance.sina.com.cn/fundInfo/api/openapi.php/CaihuiFundInfoService.getNavcur?symbol=${code}&datefrom=${start}&dateto=${end}`
+  } else {
+    requestUrl = `http://stock.finance.sina.com.cn/fundInfo/api/openapi.php/CaihuiFundInfoService.getNav?symbol=${code}&datefrom=${start}&dateto=${end}`
+  }
+
+  return from(axios.get(requestUrl))
+    .pipe(map(res => parseInt(res.data.result.data.total_num)))
+}
+
+function parseNavHistoryData(code: string, start: string, end: string, num: number, isMonetary: boolean): Observable<Nav[]> {
+  if (num === 0) {
+    return of([])
+  }
+
+  let requestUrl: string
+  if (isMonetary) {
+    requestUrl = `http://stock.finance.sina.com.cn/fundInfo/api/openapi.php/CaihuiFundInfoService.getNavcur?symbol=${code}&datefrom=${start}&dateto=${end}&num=${num}`
+  } else {
+    requestUrl = `http://stock.finance.sina.com.cn/fundInfo/api/openapi.php/CaihuiFundInfoService.getNav?symbol=${code}&datefrom=${start}&dateto=${end}&num=${num}`
+  }
+
+  return from(axios.get(requestUrl))
+    .pipe(
+      map(res => res.data.result.data.data),
+      map(rows => rows.map((row: any) => ({
+        date: row.fbrq.split(' ')[0],
+        value: parseFloat(row.jjjz),
+        total: parseFloat(row.ljjz)
+      }))),
+    )
 }
